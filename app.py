@@ -23,10 +23,10 @@ def check_tweets():
 
     url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
     
-    # EXACT INDENTATION (4 SPACES)
     headers = {
-        "x-rapidapi-key": RAPID_API_KEY,
-        "x-rapidapi-host": "twitter-aio.p.rapidapi.com"
+        "X-RapidAPI-Key": str(RAPID_API_KEY).strip(), # .strip() removes any hidden spaces
+        "X-RapidAPI-Host": "twitter-aio.p.rapidapi.com",
+        "Content-Type": "application/json"
     }
     
     querystring = {"username": "higgsfield", "count": "20"}
