@@ -22,8 +22,8 @@ def check_tweets():
     # Look back window
     lookback_time = now_ist - timedelta(hours=4)
 
-    # Use the exact URL format that worked on the website
-    url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
+   url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
+querystring = {"username": "higgsfield", "count": "20"}"
     
     # ENSURE HEADERS ARE STRINGS: Sometimes GitHub secrets need a .strip()
     headers = {
