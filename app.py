@@ -39,9 +39,11 @@ url = "https://twitter-aio.p.rapidapi.com/user/tweets"
         response = requests.get(url, headers=headers, params=querystring)
         
         if response.status_code == 200:
-            data = response.json()
-            # Most APIs nest tweets in a list
-            tweets = data.get('tweets', [])
+            # ... (your existing tweet logic)
+            print("✅ Connection Successful!")
+        else:
+            # This prints the error message from the API without showing your Key
+            print(f"❌ API Error {response.status_code}: {response.text}")
             
             for tweet in tweets:
                 text = tweet.get('text', '')
