@@ -1,0 +1,22 @@
+import snscrape.modules.twitter as sntwitter
+import requests
+
+BOT_TOKEN = "8656149277:AAHxOg-F53EctZcDQ-l4pmX0AzEQ6GHWXyU"
+CHAT_ID = "978070354"
+
+KEYWORDS = ["credits", "dm", "DM", "hours", "creds", "retweet", "reply", "like", "follow"]
+
+def send_telegram(msg):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
+
+def check_tweets():
+    for tweet in sntwitter.TwitterUserScraper("HiggsfieldAI").get_items():
+        text = tweet.content.lower()
+
+        if any(k in text for k in KEYWORDS):
+            send_telegram(f"🔥 Keyword Found!\n\n{text}\n\nhttps://twitter.com/HiggsfieldAI/status/{tweet.id}")
+        break
+
+if __name__ == "__main__":
+    check_tweets()
