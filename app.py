@@ -18,22 +18,19 @@ def send_telegram(msg):
 def check_tweets():
     ist = pytz.timezone('Asia/Kolkata')
     now_ist = datetime.now(ist)
+    # Since we check every 3 hours, we look back 4 hours to catch everything
     lookback_time = now_ist - timedelta(hours=4)
 
-    # 1. THE ENDPOINT (Twitter AIO specific)
     url = "https://twitter-aio.p.rapidapi.com/user/tweets"
-    
-    # 2. THE PARAMETERS
     querystring = {"username": "higgsfield", "count": "10"}
     
-    # 3. THE HEADERS
     headers = {
         "X-RapidAPI-Key": RAPID_API_KEY,
         "X-RapidAPI-Host": "twitter-aio.p.rapidapi.com"
     }
 
     try:
-        print(f"Checking @higgsfield via API at {now_ist.strftime('%H:%M')} IST...")
+        print(f"🎣 Trap pulling up... (IST: {now_ist.strftime('%H:%M')})")
         response = requests.get(url, headers=headers, params=querystring)
         
         if response.status_code != 200:
@@ -41,25 +38,20 @@ def check_tweets():
             return
 
         data = response.json()
-        
-        # Twitter AIO usually returns a list under 'tweets' or 'items'
-        # We use .get() to avoid the 'list index' error from before
         tweets = data.get('tweets', [])
         
         if not tweets:
-            print("📭 No tweets found in this response.")
+            print("📭 River is empty (No tweets found).")
             return
 
         for tweet in tweets:
-            # Most APIs return 'text' or 'full_text'
-            text = tweet.get('text', tweet.get('full_text', ''))
-            tweet_id = tweet.get('id_str', tweet.get('id')) # Get ID for the link
+            text = tweet.get('text', '')
+            tweet_id = tweet.get('id_str', tweet.get('id'))
             
             if any(k.lower() in text.lower() for k in KEYWORDS):
-                display_date = now_ist.strftime('%d %b, %I:%M %p')
-                msg = f"🔥 NEW TWEET ({display_date} IST)!\n\n{text}\n\nLink: https://x.com/i/status/{tweet_id}"
+                msg = f"🔥 NEW TWEET FOUND!\n\n{text}\n\nhttps://x.com/i/status/{tweet_id}"
                 send_telegram(msg)
-                print(f"✅ Match found: {tweet_id}")
+                print(f"✅ Fish caught! Alert sent for {tweet_id}")
 
     except Exception as e:
         print(f"❌ System Error: {e}")
