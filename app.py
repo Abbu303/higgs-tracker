@@ -21,7 +21,10 @@ def check_tweets():
     # Looking back 4 hours because the "trap" pulls every 3 hours
     lookback_time = now_ist - timedelta(hours=4)
 
-    url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
+# Try this specific endpoint which is the most stable for Twitter AIO
+url = "https://twitter-aio.p.rapidapi.com/user/tweets"
+# If that fails, the alternative is:
+# url = "https://twitter-aio.p.rapidapi.com/user/higgsfield/tweets"
     
     headers = {
         "X-RapidAPI-Key": str(RAPID_API_KEY).strip(), # .strip() removes any hidden spaces
