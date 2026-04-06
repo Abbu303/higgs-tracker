@@ -25,10 +25,11 @@ def check_tweets():
     url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
     querystring = {"username": "higgsfield", "count": "10"}
     
-    headers = {
-        "X-RapidAPI-Key": RAPID_API_KEY,
-        "X-RapidAPI-Host": "twitter-aio.p.rapidapi.com"
-    }
+   headers = {
+    "x-rapidapi-key": RAPID_API_KEY,      # Use lowercase keys as seen in curl
+    "x-rapidapi-host": "twitter-aio.p.rapidapi.com",
+    "Content-Type": "application/json"   # Added from your screenshot
+}
 
     try:
         print(f"🎣 Trap pulling up... (IST: {now_ist.strftime('%H:%M')})")
