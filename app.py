@@ -14,7 +14,7 @@ def send_telegram(msg):
 def check_tweets():
     scraper = Nitter(log_level=1)
     # The time 6 minutes ago (so we only get tweets posted since the last run)
-    last_run_time = datetime.now(timezone.utc) - timedelta(minutes=6)
+    last_run_time = datetime.now(timezone.utc) - timedelta(days=2)
     
     print(f"Checking for new tweets since: {last_run_time}")
     
