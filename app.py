@@ -23,7 +23,7 @@ def check_tweets():
 
     # Use the exact URL from your screenshot
     url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
-    querystring = {"username": "higgsfield", "count": "10"}
+    querystring = {"username": "higgsfield", "count": "20"}
     
    headers = {
     "x-rapidapi-key": RAPID_API_KEY,      # Use lowercase keys as seen in curl
