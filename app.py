@@ -61,6 +61,8 @@ def check_tweets():
         else:
             print(f"❌ Error {response.status_code}")
             print(f"RAW MESSAGE: {response.text}") 
+            # ADD THIS LINE TEMPORARILY:
+            print(f"DEBUG: Using Host {headers['x-rapidapi-host']}") 
             
     except Exception as e:
         print(f"❌ System Error: {e}")
