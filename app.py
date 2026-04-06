@@ -20,44 +20,26 @@ def check_tweets():
     now_ist = datetime.now(ist)
     # Looking back 4 hours because the "trap" pulls every 3 hours
     lookback_time = now_ist - timedelta(hours=4)
-
-# Try this specific endpoint which is the most stable for Twitter AIO
-url = "https://twitter-aio.p.rapidapi.com/user/tweets"
-# If that fails, the alternative is:
-# url = "https://twitter-aio.p.rapidapi.com/user/higgsfield/tweets"
-    
+    url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
     headers = {
-        "X-RapidAPI-Key": str(RAPID_API_KEY).strip(), # .strip() removes any hidden spaces
-        "X-RapidAPI-Host": "twitter-aio.p.rapidapi.com",
-        "Content-Type": "application/json"
+        "x-rapidapi-key": RAPID_API_KEY,
+        "x-rapidapi-host": "twitter-aio.p.rapidapi.com"
     }
-    
     querystring = {"username": "higgsfield", "count": "20"}
 
     try:
-        print(f"🎣 Trap pulling up... (IST: {now_ist.strftime('%H:%M')})")
         response = requests.get(url, headers=headers, params=querystring)
         
         if response.status_code == 200:
-            # ... (your existing tweet logic)
-            print("✅ Connection Successful!")
+            print("✅ 200 OK: Success!")
+            # ... (rest of your tweet logic)
         else:
-            # This prints the error message from the API without showing your Key
-            print(f"❌ API Error {response.status_code}: {response.text}")
+            # THIS IS THE KEY PART:
+            print(f"❌ Error {response.status_code}")
+            print(f"RAW MESSAGE: {response.text}") 
+            # Check your GitHub logs for this 'RAW MESSAGE'
             
-            for tweet in tweets:
-                text = tweet.get('text', '')
-                tweet_id = tweet.get('id_str', tweet.get('id'))
-                
-                if any(k.lower() in text.lower() for k in KEYWORDS):
-                    msg = f"🔥 NEW TWEET FOUND!\n\n{text}\n\nhttps://x.com/i/status/{tweet_id}"
-                    send_telegram(msg)
-                    print(f"✅ Match sent: {tweet_id}")
-        else:
-            print(f"❌ API Error: {response.status_code}")
-
     except Exception as e:
         print(f"❌ System Error: {e}")
-
 if __name__ == "__main__":
     check_tweets()
