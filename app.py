@@ -1,50 +1,40 @@
 import os
 import requests
 from ntscraper import Nitter
+from datetime import datetime, timedelta, timezone
 
-# 1. Grab Secrets (Ensure these are in your GitHub Repo Settings!)
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
-
-# KEYWORDS + PRO TIP: Added 'the' and 'a' to test the connection immediately
-KEYWORDS = ["credits", "dm", "DM", "hours", "creds", "retweet", "reply", "like", "follow", "the", "a"]
+KEYWORDS = ["credits", "dm", "DM", "hours", "creds", "retweet", "reply", "like", "follow"]
 
 def send_telegram(msg):
-    if not BOT_TOKEN or not CHAT_ID:
-        print("❌ Secrets missing from GitHub Settings!")
-        return
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    payload = {"chat_id": CHAT_ID, "text": msg}
-    requests.post(url, data=payload)
+    requests.post(url, data={"chat_id": CHAT_ID, "text": msg})
 
 def check_tweets():
-    # The handle from your URL: x.com/higgsfield
-    target_user = "higgsfield" 
-    
-    print(f"Scraping @{target_user}...")
     scraper = Nitter(log_level=1)
+    # The time 6 minutes ago (so we only get tweets posted since the last run)
+    last_run_time = datetime.now(timezone.utc) - timedelta(minutes=6)
+    
+    print(f"Checking for new tweets since: {last_run_time}")
     
     try:
-        # number=5 checks the 5 most recent posts
-        results = scraper.get_tweets(target_user, mode='user', number=5)
+        results = scraper.get_tweets("higgsfield", mode='user', number=5)
         
-        if not results or not results.get('tweets'):
-            print(f"No tweets found for {target_user}. Nitter instance might be rotated.")
-            return
-
         for tweet in results['tweets']:
-            text = tweet['text'].lower()
+            # Convert tweet time string to a Python time object
+            tweet_time = datetime.strptime(tweet['date'], "%b %d, %Y · %I:%M %p %Z").replace(tzinfo=timezone.utc)
             
-            # Logic: If any keyword (including 'the' or 'a') is found
-            if any(k.lower() in text for k in KEYWORDS):
-                link = tweet['link']
-                message = f"🔥 TWEET DETECTED!\n\nContent: {tweet['text']}\n\nLink: {link}"
-                send_telegram(message)
-                print(f"✅ Match found for: {text[:30]}...")
+            # ONLY send if the tweet is NEWER than our last run
+            if tweet_time > last_run_time:
+                text = tweet['text'].lower()
+                if any(k.lower() in text for k in KEYWORDS):
+                    send_telegram(f"🔥 NEW TWEET FOUND!\n\n{tweet['text']}\n\n{tweet['link']}")
+            else:
+                print("Tweet is old, skipping...")
                 
     except Exception as e:
-        print(f"Scraper Error: {e}")
+        print(f"Scraper error: {e}")
 
 if __name__ == "__main__":
-    print("Workflow Started...")
     check_tweets()
