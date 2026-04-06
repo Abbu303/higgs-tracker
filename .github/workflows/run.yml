@@ -2,7 +2,7 @@ name: Run Tweet Tracker
 
 on:
   schedule:
-    - cron: "0 */8 * * *"  # The 3-hour automatic trap
+    - cron: "0 */8 * * *"  # The 8-hour automatic trap
   workflow_dispatch:      # THIS ADDS THE "RUN NOW" BUTTON
 
 jobs:
