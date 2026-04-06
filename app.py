@@ -22,18 +22,24 @@ def check_tweets():
     print(f"--- 24/7 Tracker Start (IST: {now_ist.strftime('%H:%M')}) ---")
     
     try:
-        # We ask for 20 tweets to ensure we catch those April 5th ones
+        # Attempt 1: Check the Profile directly
+        print("Attempting to scrape profile @higgsfield...")
         results = scraper.get_tweets("higgsfield", mode='user', number=20)
         
-        # FIX: Check if 'tweets' exists and is NOT empty
-        if not results or 'tweets' not in results or len(results['tweets']) == 0:
-            print("⚠️ No tweets found. All Nitter instances are currently blocked by X.")
+        # Attempt 2: If Profile is blocked/empty, try Search mode
+        if not results or not results.get('tweets'):
+            print("Profile blocked or empty. Trying Search Fallback...")
+            # 'mode=term' searches for tweets from the user
+            results = scraper.get_tweets("from:higgsfield", mode='term', number=20)
+
+        # Now, if we STILL have nothing, exit quietly
+        if not results or not results.get('tweets'):
+            print("⚠️ Both Profile and Search were blocked. Skipping this 5-min run.")
             return
 
+        # If we found tweets, start the loop
         for tweet in results['tweets']:
-            # Safety check for missing data in the tweet object
-            if 'date' not in tweet or 'text' not in tweet:
-                continue
+            # ... (the rest of your code for date checking and keywords)
 
             # Convert time
             raw_date = datetime.strptime(tweet['date'], "%b %d, %Y · %I:%M %p %Z")
