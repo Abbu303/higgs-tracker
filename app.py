@@ -13,8 +13,10 @@ KEYWORDS = ["credits", "dm", "DM", "hours", "creds", "the", "a"]
 
 def send_telegram(msg):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
-    # Added a timeout to prevent the script from hanging
-    requests.post(url, data={"chat_id": CHAT_ID, "text": msg}, timeout=10)
+    try:
+        requests.post(url, data={"chat_id": CHAT_ID, "text": msg}, timeout=10)
+    except Exception as e:
+        print(f"Telegram Error: {e}")
 
 def check_tweets():
     ist = pytz.timezone('Asia/Kolkata')
@@ -22,26 +24,24 @@ def check_tweets():
     # Look back window
     lookback_time = now_ist - timedelta(hours=4)
 
-   url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
-querystring = {"username": "higgsfield", "count": "20"}"
+    # --- TYPO FIXES HERE ---
+    url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
+    querystring = {"username": "higgsfield", "count": "20"}
     
-    # ENSURE HEADERS ARE STRINGS: Sometimes GitHub secrets need a .strip()
     headers = {
         "x-rapidapi-key": str(RAPID_API_KEY).strip(),
         "x-rapidapi-host": "twitter-aio.p.rapidapi.com"
     }
-    
-    querystring = {"username": "higgsfield", "count": "20"}
 
     try:
-        print(f"🎣 Trap pulling up... (IST: {now_ist.strftime('%H:%M')})")
+        print(f"🎣 Trap pulling up... (IST: {now_ist.strftime('%H:%M %p')})")
         response = requests.get(url, headers=headers, params=querystring, timeout=15)
         
         if response.status_code == 200:
             print("✅ 200 OK: Success!")
             data = response.json()
             
-            # Twitter AIO usually returns a list under 'tweets'
+            # Twitter AIO returns a list under 'tweets'
             tweets = data.get('tweets', [])
             
             if not tweets:
@@ -49,7 +49,6 @@ querystring = {"username": "higgsfield", "count": "20"}"
                 return
 
             for tweet in tweets:
-                # API format check: 'text' or 'full_text'
                 text = tweet.get('text', tweet.get('full_text', ''))
                 tweet_id = tweet.get('id_str', tweet.get('id'))
                 
@@ -61,7 +60,6 @@ querystring = {"username": "higgsfield", "count": "20"}"
                     print(f"✅ Alert sent for: {tweet_id}")
         else:
             print(f"❌ Error {response.status_code}")
-            # This will tell us EXACTLY why the 403 is happening
             print(f"RAW MESSAGE: {response.text}") 
             
     except Exception as e:
