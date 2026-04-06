@@ -1,11 +1,12 @@
 import os
 import requests
 from ntscraper import Nitter
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+import pytz  # New import for timezones
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
-KEYWORDS = ["credits", "dm", "DM", "hours", "creds", "retweet", "reply", "like", "follow", "a"]
+KEYWORDS = ["credits", "dm", "DM", "hours", "creds", "retweet", "reply", "like", "follow", "the", "a"]
 
 def send_telegram(msg):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -13,28 +14,44 @@ def send_telegram(msg):
 
 def check_tweets():
     scraper = Nitter(log_level=1)
-    # The time 6 minutes ago (so we only get tweets posted since the last run)
-    last_run_time = datetime.now(timezone.utc) - timedelta(days=2)
     
-    print(f"Checking for new tweets since: {last_run_time}")
+    # 1. Set up IST Timezone
+    ist = pytz.timezone('Asia/Kolkata')
+    
+    # 2. Get current time in IST
+    now_ist = datetime.now(ist)
+    
+    # 3. Look back 2 days (to catch those April 5th tweets!)
+    lookback_time = now_ist - timedelta(days=2)
+    
+    print(f"Current Time (IST): {now_ist.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Checking for tweets since (IST): {lookback_time.strftime('%Y-%m-%d %H:%M:%S')}")
     
     try:
-        results = scraper.get_tweets("higgsfield", mode='user', number=5)
+        results = scraper.get_tweets("higgsfield", mode='user', number=10)
         
+        if not results or not results.get('tweets'):
+            print("No tweets found.")
+            return
+
         for tweet in results['tweets']:
-            # Convert tweet time string to a Python time object
-            tweet_time = datetime.strptime(tweet['date'], "%b %d, %Y · %I:%M %p %Z").replace(tzinfo=timezone.utc)
+            # 4. Convert the tweet's time string to an IST object
+            # Nitter usually returns time in UTC, so we localize then convert
+            raw_date = datetime.strptime(tweet['date'], "%b %d, %Y · %I:%M %p %Z")
+            tweet_time_utc = pytz.utc.localize(raw_date)
+            tweet_time_ist = tweet_time_utc.astimezone(ist)
             
-            # ONLY send if the tweet is NEWER than our last run
-            if tweet_time > last_run_time:
+            if tweet_time_ist > lookback_time:
                 text = tweet['text'].lower()
                 if any(k.lower() in text for k in KEYWORDS):
-                    send_telegram(f"🔥 NEW TWEET FOUND!\n\n{tweet['text']}\n\n{tweet['link']}")
+                    # We format the date nicely for your Telegram message
+                    display_date = tweet_time_ist.strftime('%d %b, %I:%M %p')
+                    send_telegram(f"🔥 TWEET FOUND ({display_date} IST)!\n\n{tweet['text']}\n\n{tweet['link']}")
             else:
-                print("Tweet is old, skipping...")
+                print(f"Skipping old tweet from {tweet_time_ist}")
                 
     except Exception as e:
-        print(f"Scraper error: {e}")
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     check_tweets()
