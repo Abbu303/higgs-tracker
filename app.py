@@ -21,7 +21,8 @@ def check_tweets():
     # Since we check every 3 hours, we look back 4 hours to catch everything
     lookback_time = now_ist - timedelta(hours=4)
 
-    url = "https://twitter-aio.p.rapidapi.com/user/tweets"
+    # Use the exact URL from your screenshot
+    url = "https://twitter-aio.p.rapidapi.com/user/-1/tweets"
     querystring = {"username": "higgsfield", "count": "10"}
     
     headers = {
